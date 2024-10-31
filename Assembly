@@ -1,0 +1,53 @@
+.stack 100h          ; Define a pilha com 256 bytes (100h em hexadecimal).
+
+.data                ; Seção de dados - aqui definimos as variáveis.
+    num1 db 9       ; Primeiro número, definido como 9.
+    resultado db 0   ; Variável para armazenar o resultado da raiz quadrada, inicialmente 0.
+    msg db 'Raiz quadrada: $' ; Mensagem que será exibida na tela.
+
+.code                ; Seção de código - onde as instruções são executadas.
+start: 
+    mov ax, @data    ; Carrega o endereço da seção de dados (@data) no registrador 'ax'.
+    mov ds, ax       ; Move o valor de 'ax' para o registrador de segmento de dados 'ds'.
+
+    ; Calcular a raiz quadrada usando o método de Newton
+    mov al, num1     ; Carrega o valor de 'num1' (9) no registrador 'al'.
+    mov bl, al       ; Começa com a estimativa igual ao número (9).
+    
+    ; Se o número for 0 ou 1, a raiz quadrada é ele mesmo
+    cmp al, 1
+    jbe FimRaiz
+
+RaizLoop:
+    mov ah, 0        ; Limpa AH para usar AX como o número completo.
+    mov cl, al       ; Armazena o número (num1) em CL.
+    div bl           ; Divide o número pela estimativa.
+    add al, bl       ; Soma a estimativa atual (bl) ao quociente.
+    shr ax, 1        ; Divide a soma por 2 (média).
+    mov bl, al       ; Atualiza a estimativa.
+
+    ; Verifica se a estimativa não mudou
+    cmp bl, al       ; Compara a nova estimativa com a anterior.
+    je FimRaiz       ; Se for igual, sai do loop.
+    jmp RaizLoop     ; Se não for igual, repete o loop.
+
+FimRaiz:
+    ; Armazena o resultado
+    mov resultado, bl ; Armazena o valor da estimativa final na variável 'resultado'.
+  
+    ; Exibindo a string "Raiz quadrada: "
+    mov ah, 09h      ; Carrega o código da função de interrupção 09h do DOS em 'ah'.
+    lea dx, msg      ; Carrega o endereço da string 'msg' no registrador 'dx'.
+    int 21h          ; Executa a interrupção 21h, que chama o serviço do DOS para exibir a string.
+   
+    ; Exibindo o número do resultado
+    mov ah, 02h      ; Carrega o código da função de interrupção 02h do DOS em 'ah'.
+    mov dl, resultado ; Carrega o valor do resultado no registrador 'dl'.
+    add dl, 30h      ; Converte o valor numérico (0-9) para o correspondente caractere ASCII.
+    int 21h          ; Executa a interrupção 21h novamente, agora para exibir o número (caractere) na tela.
+   
+    ; Finalizando o programa
+    mov ah, 4Ch      ; Carrega o código da função 4Ch do DOS, que encerra o programa.
+    int 21h          ; Executa a interrupção 21h para finalizar o programa.
+  
+end start            ; Indica o final do programa e define o ponto de entrada (start).
