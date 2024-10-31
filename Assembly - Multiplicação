@@ -1,0 +1,50 @@
+.model large ; modelo 
+.stack 500h  ; maior capacidade  
+
+.data
+    num1 db 2
+    num2 db 3
+    resultado db 0
+    msg db 'Resultado da multiplicacao: $'
+
+.code
+start:
+    mov ax, @data
+    mov ds, ax
+
+    mov al, num1
+    mov bl, num2
+    mul bl
+    mov resultado, al
+
+    ; Exibindo a string "Resultado: "
+    mov ah, 09h
+    lea dx, msg                    
+    int 21h
+
+    ; Separando o valor em dezenas e unidades
+    mov al, resultado
+    mov ah, 0          ; Limpa o registrador AH para fazer uma divisão correta
+    mov bl, 10         ; Divisor para obter a dezena
+    div bl             ; Divide AX por BL, resultado: AL = unidade, AH = dezena
+
+    ; Exibindo o dígito das dezenas (se existir)
+    cmp ah, 0
+    je skip_tens       ; Se a dezena for 0, pula para exibir as unidades
+    add ah, 30h        ; Converte o dígito da dezena para ASCII
+    mov dl, ah
+    mov ah, 02h
+    int 21h            ; Exibe o caractere da dezena
+
+skip_tens:
+    ; Exibindo o dígito das unidades
+    add al, 30h        ; Converte o dígito da unidade para ASCII
+    mov dl, al
+    mov ah, 02h
+    int 21h            ; Exibe o caractere da unidade
+
+    ; Finalizando o programa
+    mov ah, 4Ch
+    int 21h
+
+end start
